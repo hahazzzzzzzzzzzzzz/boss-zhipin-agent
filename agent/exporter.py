@@ -128,31 +128,37 @@ class ExcelExporter:
             ws.column_dimensions[get_column_letter(col_idx)].width = width
 
 
+def dict_to_position(item: dict) -> JobPosition:
+    """将 dict 转为 JobPosition（公共函数，供 fetcher/greeting 等复用）"""
+    return JobPosition(
+        company=item.get("公司名称", ""),
+        title=item.get("岗位名称", ""),
+        direction=item.get("岗位方向", "数据分析"),
+        industry=item.get("行业", "其他"),
+        city=item.get("工作地点", ""),
+        salary=item.get("实习薪资", "面议"),
+        responsibilities=item.get("岗位职责概述", ""),
+        requirements=item.get("任职要求概述", ""),
+        apply_link=item.get("投递链接/来源", ""),
+        source=item.get("来源平台", ""),
+        has_conversion=item.get("有转正机会", False),
+        can_retain=item.get("可留用", False),
+        target_grad=item.get("面向届别", ""),
+        notes=item.get("备注", ""),
+    )
+
+
+# 兼容内部调用别名
+_dict_to_position = dict_to_position
+
+
 def export_from_json(json_path: str, output_path: str) -> str:
     """从JSON文件导入并导出Excel（命令行接口）"""
     import json
     with open(json_path, "r", encoding="utf-8") as f:
         positions_data = json.load(f)
 
-    positions = []
-    for item in positions_data:
-        pos = JobPosition(
-            company=item.get("公司名称", ""),
-            title=item.get("岗位名称", ""),
-            direction=item.get("岗位方向", "数据分析"),
-            industry=item.get("行业", "其他"),
-            city=item.get("工作地点", ""),
-            salary=item.get("实习薪资", "面议"),
-            responsibilities=item.get("岗位职责概述", ""),
-            requirements=item.get("任职要求概述", ""),
-            apply_link=item.get("投递链接/来源", ""),
-            source=item.get("来源平台", ""),
-            has_conversion=item.get("有转正机会", False),
-            can_retain=item.get("可留用", False),
-            target_grad=item.get("面向届别", ""),
-            notes=item.get("备注", ""),
-        )
-        positions.append(pos)
+    positions = [dict_to_position(item) for item in positions_data]
 
     result = SearchResult(positions=positions, total_found=len(positions))
     exporter = ExcelExporter(result)

@@ -15,10 +15,30 @@ build/
 node_modules/
 dist/
 
-# 运行时数据
+# 运行时数据 / 缓存 / 用户产出
 data/*.db
 data/*.sqlite
 *.db
+data/.fetch_cache/
+data/greetings_cache.json
+data/*.json
+data/*.xlsx
+data/*.md
+data/*.csv
+# 保留 data 目录结构（占位）
+!data/.gitkeep
+
+# 用户简历（含个人信息，切勿提交）
+*.pdf
+resume.*
+!resume.py
+示例简历*
+*简历*
+
+# Playwright 用户数据目录（含登录态）
+.playwright_profile/
+.playwright_*/
+*_profile/
 
 # IDE
 .vscode/

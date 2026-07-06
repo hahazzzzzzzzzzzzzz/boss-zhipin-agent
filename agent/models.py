@@ -70,15 +70,23 @@ class JobPosition:
         return " | ".join(notes)
 
     @property
-    def priority_score(self) -> int:
-        """优先级评分：越高越优先"""
-        score = 0
+    def priority_score(self) -> float:
+        """优先级评分：越高越优先。综合转正机会 + 匹配度"""
+        score = 0.0
         if self.has_conversion:
             score += 100
         if self.can_retain:
             score += 50
-        score += int(self.skill_match_score * 30)
+        # 匹配度 0-1 映射到 0-50，让匹配度高的岗位排前面
+        score += self.skill_match_score * 50
         return score
+
+    def __repr__(self) -> str:
+        return (
+            f"JobPosition(company={self.company!r}, title={self.title!r}, "
+            f"city={self.city!r}, salary={self.salary!r}, "
+            f"match={self.skill_match_score:.0%})"
+        )
 
 
 @dataclass
@@ -116,6 +124,7 @@ class SearchResult:
     def summary(self) -> str:
         """生成搜索摘要"""
         self.sort_by_priority()
+        high_match = sum(1 for p in self.positions if p.skill_match_score >= 0.6)
         lines = [
             f"## 搜索结果摘要",
             f"- 搜索时间：{self.search_time[:19]}",
@@ -123,6 +132,7 @@ class SearchResult:
             f"  - 杭州：{self.hangzhou_count} 个",
             f"  - 深圳：{self.shenzhen_count} 个",
             f"- 有转正机会：**{self.conversion_count}** 个",
+            f"- 高匹配度（≥60%）：**{high_match}** 个",
             f"",
             f"### 方向分布",
         ]
